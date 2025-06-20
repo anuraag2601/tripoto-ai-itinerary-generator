@@ -1,6 +1,5 @@
 const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY
 const USE_MOCK_DATA = !ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === 'your_anthropic_api_key_here'
-const ANTHROPIC_BASE_URL = '/api/anthropic'
 
 export interface APIResponse<T = any> {
   success: boolean
@@ -36,10 +35,7 @@ export interface CustomizeRequest {
 }
 
 class AnthropicAPIClient {
-  private apiKey: string
-
   constructor(apiKey: string) {
-    this.apiKey = apiKey
   }
 
   private async callAnthropic(prompt: string): Promise<any> {
@@ -419,4 +415,4 @@ export const isAPIError = (response: any): response is { success: false; error: 
 
 export const isAPISuccess = <T>(response: APIResponse<T>): response is { success: true; data: T } => {
   return response && response.success === true && response.data !== undefined
-} 
+}  

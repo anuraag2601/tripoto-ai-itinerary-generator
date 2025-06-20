@@ -3,7 +3,7 @@ import { MapPin, Wand2, Download, Edit3 } from 'lucide-react'
 import { ItineraryCard } from '@/components/Itinerary'
 import { InterestsSelection } from '@/components/InterestsSelection'
 import { WhyYoullLoveThis } from '@/components/WhyYoullLoveThis'
-import { generateItineraryPDF, generateSimpleItineraryPDF } from '@/utils/pdfGenerator'
+import { generateItineraryPDF, generateSimpleItineraryPDF, createPDFItineraryObject } from '@/utils/pdfGenerator'
 import { api, isAPISuccess, handleAPIError } from '@/utils/api'
 import type { ItineraryRequest, CustomizeRequest } from '@/utils/api'
 import type { Itinerary } from '@/types'
@@ -209,40 +209,7 @@ const ChatPage: React.FC = () => {
     
     setIsDownloadingPDF(true)
     try {
-      // Create a compatible itinerary object for PDF generation
-      const pdfItinerary = {
-        title: itinerary.title || `${itinerary.destination?.name || 'Unknown'} Adventure`,
-        description: itinerary.description || 'A personalized travel itinerary crafted just for you',
-        destination: {
-          name: itinerary.destination?.name || 'Unknown Destination',
-          country: itinerary.destination?.country || 'Unknown Country'
-        },
-        duration: {
-          days: itinerary.duration?.days || (itinerary.activities || []).length || 1,
-          startDate: itinerary.duration?.startDate,
-          endDate: itinerary.duration?.endDate
-        },
-        budget: {
-          total: itinerary.budget?.total || 0,
-          currency: itinerary.budget?.currency || 'USD'
-        },
-        activities: (itinerary.activities || []).map(activity => ({
-          id: activity.id || `activity-${Math.random()}`,
-          name: activity.name || 'Unnamed Activity',
-          description: activity.description,
-          type: activity.type || 'general',
-          location: {
-            name: activity.location?.name || 'Unknown Location'
-          },
-          day: activity.day || 1,
-          timeSlot: activity.timeSlot,
-          cost: activity.cost ? {
-            amount: activity.cost.amount,
-            currency: activity.cost.currency
-          } : undefined
-        }))
-      };
-      
+      const pdfItinerary = createPDFItineraryObject(itinerary);
       await generateItineraryPDF(pdfItinerary, 'itinerary-content')
       toast.success('PDF downloaded successfully!')
     } catch (error) {
@@ -256,40 +223,7 @@ const ChatPage: React.FC = () => {
   const handleDownloadSimplePDF = () => {
     if (!itinerary) return
     
-    // Create a compatible itinerary object for PDF generation
-    const pdfItinerary = {
-      title: itinerary.title || `${itinerary.destination?.name || 'Unknown'} Adventure`,
-      description: itinerary.description || 'A personalized travel itinerary crafted just for you',
-      destination: {
-        name: itinerary.destination?.name || 'Unknown Destination',
-        country: itinerary.destination?.country || 'Unknown Country'
-      },
-      duration: {
-        days: itinerary.duration?.days || (itinerary.activities || []).length || 1,
-        startDate: itinerary.duration?.startDate,
-        endDate: itinerary.duration?.endDate
-      },
-      budget: {
-        total: itinerary.budget?.total || 0,
-        currency: itinerary.budget?.currency || 'USD'
-      },
-      activities: (itinerary.activities || []).map(activity => ({
-        id: activity.id || `activity-${Math.random()}`,
-        name: activity.name || 'Unnamed Activity',
-        description: activity.description,
-        type: activity.type || 'general',
-        location: {
-          name: activity.location?.name || 'Unknown Location'
-        },
-        day: activity.day || 1,
-        timeSlot: activity.timeSlot,
-        cost: activity.cost ? {
-          amount: activity.cost.amount,
-          currency: activity.cost.currency
-        } : undefined
-      }))
-    };
-    
+    const pdfItinerary = createPDFItineraryObject(itinerary);
     generateSimpleItineraryPDF(pdfItinerary)
     toast.success('Simple PDF downloaded!')
   }
@@ -770,4 +704,4 @@ For example:
   )
 }
 
-export default ChatPage 
+export default ChatPage  
