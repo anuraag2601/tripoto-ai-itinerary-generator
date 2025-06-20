@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anthropic API Integration Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .loading { background-color: #fff3cd; border-color: #ffeaa7; }
+        button { padding: 10px 20px; margin: 10px 0; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .log { margin: 10px 0; padding: 10px; background: #f8f9fa; border-left: 4px solid #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Anthropic Claude API Integration Test</h1>
+        <p>This page tests the Anthropic Claude API integration directly without relying on the UI navigation flow.</p>
+        
+        <div id="status" class="test-section loading">
+            <h3>📊 Test Status</h3>
+            <p id="status-text">Ready to test...</p>
+        </div>
+        
+        <div class="test-section">
+            <h3>🚀 API Integration Test</h3>
+            <button onclick="testAnthropicAPI()">Test Anthropic Claude API</button>
+            <div id="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📋 Test Request</h3>
+            <pre id="test-request">
+{
+  "destination": "Tokyo, Japan",
+  "startDate": "2025-07-15",
+  "endDate": "2025-07-20",
+  "budget": 2000,
+  "currency": "USD",
+  "travelStyle": "adventure",
+  "interests": ["culture", "food", "temples", "nightlife"],
+  "additionalRequests": "I want to experience authentic Japanese culture and try amazing food"
+}
+            </pre>
+        </div>
+        
+        <div id="logs" class="test-section">
+            <h3>📝 Test Logs</h3>
+            <div id="log-container"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('log-container');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log';
+            logEntry.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            logContainer.appendChild(logEntry);
+            console.log(message);
+        }
+
+        function updateStatus(text, type = 'loading') {
+            const statusDiv = document.getElementById('status');
+            const statusText = document.getElementById('status-text');
+            statusDiv.className = `test-section ${type}`;
+            statusText.textContent = text;
+        }
+
+        async function testAnthropicAPI() {
+            try {
+                log('🧪 Starting Anthropic API Integration Test...');
+                updateStatus('Testing API integration...', 'loading');
+                
+                // Check if API key is available
+                const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
+                if (!apiKey) {
+                    throw new Error('VITE_ANTHROPIC_API_KEY not found in environment');
+                }
+                log('✅ API key found in environment');
+                
+                // Import the API module
+                log('📦 Importing API module...');
+                const apiModule = await import('./src/utils/api.ts');
+                log('✅ Successfully imported API module');
+                log(`Available exports: ${Object.keys(apiModule).join(', ')}`);
+                
+                // Create API client instance
+                if (!apiModule.AnthropicAPIClient) {
+                    throw new Error('AnthropicAPIClient not found in API module');
+                }
+                
+                const apiClient = new apiModule.AnthropicAPIClient(apiKey);
+                log('✅ Created AnthropicAPIClient instance');
+                
+                // Create test request matching ItineraryRequest interface
+                const testRequest = {
+                    sessionId: 'test-session-' + Date.now(),
+                    userInput: {
+                        destination: 'Tokyo, Japan',
+                        numberOfDays: 5,
+                        travelDates: {
+                            start: '2025-07-15',
+                            end: '2025-07-20'
+                        },
+                        travelStyle: 'adventure',
+                        interests: ['culture', 'food', 'temples', 'nightlife'],
+                        budget: '2000',
+                        additionalRequests: 'I want to experience authentic Japanese culture and try amazing food'
+                    }
+                };
+                
+                log('📋 Test request created');
+                log(`Request details: ${JSON.stringify(testRequest, null, 2)}`);
+                
+                // Make the API call
+                log('🚀 Making API call to Anthropic Claude...');
+                updateStatus('Making API call to Claude 3 Haiku...', 'loading');
+                
+                const result = await apiClient.generateItinerary(testRequest);
+                
+                log('📊 API Response received');
+                log(`Success: ${result.success}`);
+                
+                const resultsDiv = document.getElementById('test-results');
+                
+                if (result.success) {
+                    log('✅ API call successful!');
+                    log(`Generated itinerary destination: ${result.data?.destination?.name}`);
+                    log(`Number of activities: ${result.data?.activities?.length || 0}`);
+                    log(`Budget total: ${result.data?.budget?.total}`);
+                    log(`Duration: ${result.data?.duration?.days} days`);
+                    
+                    // Verify JSON structure matches frontend expectations
+                    const requiredFields = ['destination', 'duration', 'budget', 'activities'];
+                    const missingFields = requiredFields.filter(field => !result.data?.[field]);
+                    
+                    if (missingFields.length === 0) {
+                        log('✅ JSON structure is compatible with frontend');
+                        updateStatus('API integration test successful!', 'success');
+                    } else {
+                        log(`⚠️ Missing required fields: ${missingFields.join(', ')}`);
+                        updateStatus('API call successful but JSON structure incomplete', 'error');
+                    }
+                    
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ API Test Successful</h4>
+                            <p><strong>Destination:</strong> ${result.data?.destination?.name}</p>
+                            <p><strong>Duration:</strong> ${result.data?.duration?.days} days</p>
+                            <p><strong>Budget:</strong> ${result.data?.budget?.currency} ${result.data?.budget?.total}</p>
+                            <p><strong>Activities:</strong> ${result.data?.activities?.length || 0} activities</p>
+                            <details>
+                                <summary>View Full Response</summary>
+                                <pre>${JSON.stringify(result.data, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    log(`❌ API call failed: ${result.error}`);
+                    updateStatus('API integration test failed', 'error');
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ API Test Failed</h4>
+                            <p><strong>Error:</strong> ${result.error}</p>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                log(`💥 Error during API test: ${error.message}`);
+                updateStatus('Test failed with error', 'error');
+                
+                const resultsDiv = document.getElementById('test-results');
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h4>💥 Test Error</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <details>
+                            <summary>Stack Trace</summary>
+                            <pre>${error.stack}</pre>
+                        </details>
+                    </div>
+                `;
+            }
+        }
+
+        // Make testAnthropicAPI available globally
+        window.testAnthropicAPI = testAnthropicAPI;
+        
+        // Auto-run test on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🌐 Test page loaded successfully');
+            updateStatus('Ready to test API integration', 'loading');
+        });
+    </script>
+</body>
+</html>
