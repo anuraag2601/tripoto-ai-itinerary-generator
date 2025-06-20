@@ -1,5 +1,7 @@
 const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY
-const USE_MOCK_DATA = !ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === 'your_anthropic_api_key_here'
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'
+const USE_BACKEND_PROXY = import.meta.env.VITE_USE_BACKEND_PROXY === 'true'
+const USE_MOCK_DATA = !USE_BACKEND_PROXY && (!ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === 'your_anthropic_api_key_here')
 
 export interface APIResponse<T = any> {
   success: boolean
@@ -404,6 +406,11 @@ CRITICAL: Return ONLY the complete updated JSON object. No markdown, no explanat
 
   async generateItinerary(request: ItineraryRequest): Promise<APIResponse<any>> {
     try {
+      if (USE_BACKEND_PROXY) {
+        console.log('🔄 Using backend proxy for itinerary generation')
+        return await this.callBackendProxy('/api/itinerary/generate', request)
+      }
+
       const prompt = this.generateItineraryPrompt(request)
       const response = await this.callAnthropic(prompt)
       
@@ -434,6 +441,11 @@ CRITICAL: Return ONLY the complete updated JSON object. No markdown, no explanat
 
   async customizeItinerary(request: CustomizeRequest): Promise<APIResponse<any>> {
     try {
+      if (USE_BACKEND_PROXY) {
+        console.log('🔄 Using backend proxy for itinerary customization')
+        return await this.callBackendProxy('/api/itinerary/customize', { itinerary: request.itinerary, customizationRequest: request.customizationRequest })
+      }
+
       const prompt = this.generateCustomizePrompt(request)
       const response = await this.callAnthropic(prompt)
       
@@ -459,6 +471,36 @@ CRITICAL: Return ONLY the complete updated JSON object. No markdown, no explanat
           code: 'CUSTOMIZATION_ERROR'
         }
       }
+    }
+  }
+
+  private async callBackendProxy(endpoint: string, data: any): Promise<APIResponse<any>> {
+    try {
+      const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Backend proxy error: ${response.status} ${response.statusText}`)
+      }
+
+      const result = await response.json()
+      
+      if (!result.success) {
+        throw new Error(result.error?.message || 'Backend proxy returned error')
+      }
+
+      return {
+        success: true,
+        data: result.data
+      }
+    } catch (error) {
+      console.error('Backend proxy call failed:', error)
+      throw error
     }
   }
 }
@@ -499,4 +541,4 @@ export const isAPISuccess = <T>(response: APIResponse<T>): response is { success
   return response && response.success === true && response.data !== undefined
 }
 
-export { AnthropicAPIClient } 
+export { AnthropicAPIClient }                    
