@@ -1,6 +1,5 @@
 const ANTHROPIC_API_KEY = import.meta.env.VITE_ANTHROPIC_API_KEY
 const USE_MOCK_DATA = !ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === 'your_anthropic_api_key_here'
-const ANTHROPIC_BASE_URL = '/api/anthropic'
 
 export interface APIResponse<T = any> {
   success: boolean
@@ -49,13 +48,49 @@ class AnthropicAPIClient {
       return this.generateMockItinerary(prompt)
     }
 
-    // Note: Direct API calls from browser will fail due to CORS
-    // This is intentionally left here for documentation
-    // In production, this should go through a backend proxy
     try {
-      throw new Error('Direct Anthropic API calls require a backend proxy due to CORS restrictions. Using mock data instead.')
+      const { Anthropic } = await import('@anthropic-ai/sdk')
+      
+      const anthropic = new Anthropic({
+        apiKey: this.apiKey,
+        dangerouslyAllowBrowser: true
+      })
+
+      console.log('Making request to Anthropic Claude API...')
+      
+      const response = await anthropic.messages.create({
+        model: 'claude-3-haiku-20240307', // Fast and efficient model
+        max_tokens: 4000,
+        temperature: 0.7,
+        system: "You are a professional travel planning expert. You create detailed, realistic travel itineraries based on user preferences. Always respond with valid JSON only, no markdown formatting or additional text.",
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      })
+
+      // Extract the text content from the response
+      const content = response.content[0]
+      if (content.type !== 'text') {
+        throw new Error('Unexpected response type from Anthropic API')
+      }
+
+      console.log('Successfully received response from Anthropic Claude API')
+      return content.text
+
     } catch (error) {
       console.error('Anthropic API error:', error)
+      
+      if (error instanceof Error) {
+        if (error.message.includes('CORS') || error.message.includes('fetch')) {
+          console.log('CORS error detected. Consider using a backend proxy for production.')
+        } else if (error.message.includes('401') || error.message.includes('authentication')) {
+          console.log('Authentication error. Please check your API key.')
+        }
+      }
+      
       console.log('Falling back to mock data...')
       return this.generateMockItinerary(prompt)
     }
@@ -183,24 +218,30 @@ class AnthropicAPIClient {
   private generateItineraryPrompt(request: ItineraryRequest): string {
     const { userInput } = request
     
-    return `You are a travel planning expert. Create a detailed ${userInput.numberOfDays}-day itinerary for ${userInput.destination}.
+    return `Create a detailed ${userInput.numberOfDays}-day travel itinerary for ${userInput.destination}.
 
-User preferences:
+User Requirements:
+- Destination: ${userInput.destination}
+- Duration: ${userInput.numberOfDays} days
 - Travel dates: ${userInput.travelDates.start} to ${userInput.travelDates.end}
 - Travel style: ${userInput.travelStyle}
 - Interests: ${userInput.interests.join(', ')}
-- Budget: ${userInput.budget}
+- Budget level: ${userInput.budget}
 - Additional requests: ${userInput.additionalRequests || 'None'}
 
-Please return a JSON response with the following structure:
+CRITICAL: Return ONLY valid JSON with this exact structure (no markdown, no explanations):
 {
-  "id": "unique_id",
-  "title": "Trip title",
-  "description": "Brief description",
+  "id": "itinerary_${Date.now()}",
+  "title": "Engaging trip title for ${userInput.destination}",
+  "description": "Compelling 2-3 sentence description highlighting unique experiences",
   "destination": {
     "name": "${userInput.destination}",
-    "country": "Country name",
-    "coordinates": {"latitude": 0, "longitude": 0}
+    "country": "Actual country name",
+    "region": "Region/state if applicable",
+    "coordinates": {"latitude": actual_latitude, "longitude": actual_longitude},
+    "timezone": "Timezone (e.g., America/New_York)",
+    "currency": "Local currency code",
+    "language": "Primary language"
   },
   "duration": {
     "days": ${userInput.numberOfDays},
@@ -208,120 +249,157 @@ Please return a JSON response with the following structure:
     "endDate": "${userInput.travelDates.end}"
   },
   "budget": {
-    "total": estimated_total,
-    "currency": "USD"
+    "total": realistic_total_estimate,
+    "currency": "USD",
+    "breakdown": {
+      "accommodation": accommodation_cost,
+      "transportation": transport_cost,
+      "activities": activities_cost,
+      "meals": meals_cost,
+      "shopping": shopping_estimate,
+      "miscellaneous": misc_cost
+    }
   },
   "activities": [
     {
-      "id": "activity_id",
-      "name": "Activity name",
-      "description": "Detailed description",
-      "type": "sightseeing|adventure|cultural|entertainment|dining",
+      "id": "activity_day_sequence",
+      "name": "Specific activity name",
+      "description": "Detailed description explaining why this is special and what to expect",
+      "type": "sightseeing|adventure|cultural|entertainment|dining|shopping|relaxation",
       "location": {
-        "name": "Location name",
-        "address": "Full address",
-        "coordinates": {"latitude": 0, "longitude": 0}
+        "name": "Exact location name",
+        "address": "Complete address with city",
+        "coordinates": {"latitude": precise_lat, "longitude": precise_lng},
+        "type": "attraction|restaurant|hotel|landmark"
       },
       "duration": duration_in_minutes,
       "cost": {
-        "amount": estimated_cost,
+        "amount": realistic_cost,
         "currency": "USD",
         "type": "per_person"
       },
-      "day": day_number,
-      "timeSlot": "morning|afternoon|evening",
-      "images": ["url1", "url2"],
-      "bookingUrl": "booking_link_if_available"
+      "rating": 4.0_to_5.0,
+      "day": day_number_1_to_${userInput.numberOfDays},
+      "timeSlot": "morning|afternoon|evening|night",
+      "images": ["https://images.unsplash.com/relevant-image"],
+      "bookingUrl": "https://example.com/book-if-available"
     }
   ],
   "accommodations": [
     {
-      "id": "accommodation_id",
-      "name": "Hotel/accommodation name",
-      "type": "hotel|hostel|apartment",
+      "id": "accommodation_1",
+      "name": "Specific hotel/accommodation name",
+      "type": "hotel|hostel|apartment|resort|guesthouse",
       "location": {
-        "name": "Location name",
-        "address": "Full address"
+        "name": "Hotel location area",
+        "address": "Complete hotel address",
+        "coordinates": {"latitude": hotel_lat, "longitude": hotel_lng},
+        "type": "hotel"
       },
       "checkIn": "${userInput.travelDates.start}",
       "checkOut": "${userInput.travelDates.end}",
       "cost": {
-        "amount": estimated_cost,
+        "amount": total_accommodation_cost,
         "currency": "USD",
         "type": "total"
       },
-      "rating": rating_out_of_5,
-      "amenities": ["wifi", "breakfast", "gym"],
-      "bookingUrl": "booking_link"
+      "rating": 4.0_to_5.0,
+      "amenities": ["Free WiFi", "Breakfast", "Gym", "Pool", "Spa", "Restaurant"],
+      "bookingUrl": "https://booking-site.com/hotel-link"
     }
   ],
   "transportation": [
     {
-      "id": "transport_id",
-      "type": "flight|train|bus|taxi",
-      "from": {"name": "Origin"},
-      "to": {"name": "Destination"},
-      "departure": "ISO_datetime",
-      "arrival": "ISO_datetime",
+      "id": "transport_arrival",
+      "type": "flight|train|bus|car",
+      "from": {"name": "Origin city/airport", "address": "Origin address", "type": "airport|station"},
+      "to": {"name": "${userInput.destination} airport/station", "address": "Destination address", "type": "airport|station"},
+      "departure": "${userInput.travelDates.start}T10:00:00Z",
+      "arrival": "${userInput.travelDates.start}T14:00:00Z",
       "cost": {
-        "amount": estimated_cost,
+        "amount": realistic_transport_cost,
         "currency": "USD",
         "type": "per_person"
       },
-      "day": day_number
+      "duration": duration_in_minutes,
+      "provider": "Airline/transport company",
+      "day": 0
     }
   ],
   "meals": [
     {
-      "id": "meal_id",
-      "name": "Restaurant/meal name",
-      "type": "breakfast|lunch|dinner",
+      "id": "meal_day_mealtype",
+      "name": "Specific restaurant name",
+      "type": "breakfast|lunch|dinner|snack",
       "location": {
         "name": "Restaurant name",
-        "address": "Address"
+        "address": "Restaurant address",
+        "coordinates": {"latitude": restaurant_lat, "longitude": restaurant_lng},
+        "type": "restaurant"
       },
       "time": "HH:MM",
       "cost": {
-        "amount": estimated_cost,
+        "amount": realistic_meal_cost,
         "currency": "USD",
         "type": "per_person"
       },
       "cuisine": "cuisine_type",
-      "rating": rating_out_of_5,
-      "day": day_number
+      "rating": 4.0_to_5.0,
+      "day": day_number,
+      "bookingUrl": "restaurant-booking-link-if-available"
     }
-  ]
+  ],
+  "status": "generated",
+  "metadata": {
+    "generatedBy": "claude-3-haiku",
+    "version": 1,
+    "tags": ["${userInput.interests.join('", "')}"],
+    "difficulty": "easy|moderate|challenging",
+    "season": "spring|summer|autumn|winter",
+    "groupSize": estimated_group_size,
+    "accessibility": "full|partial|limited"
+  },
+  "createdAt": "${new Date().toISOString()}",
+  "updatedAt": "${new Date().toISOString()}"
 }
 
-Make sure to:
-1. Include realistic activities for each day
-2. Consider travel time between locations
-3. Provide diverse experiences based on interests
-4. Stay within the budget range
-5. Include local cultural experiences
-6. Suggest popular and highly-rated places
-7. Balance different types of activities throughout the trip
+REQUIREMENTS:
+1. Create ${userInput.numberOfDays * 3-4} activities total (3-4 per day) with realistic timing
+2. Include specific, real places with accurate coordinates and addresses
+3. Balance activities based on interests: ${userInput.interests.join(', ')}
+4. Respect ${userInput.budget} budget level with realistic pricing
+5. Consider travel time between locations (group nearby activities)
+6. Include breakfast, lunch, dinner recommendations for each day
+7. Suggest 1-2 accommodation options that fit the budget and location
+8. Add transportation details (flights, local transport)
+9. Use real restaurant names, attractions, and hotels when possible
+10. Ensure all coordinates are accurate for the destination
+11. Make descriptions engaging and informative (2-3 sentences each)
+12. Include practical details like duration, costs, and booking info
 
-Return only valid JSON without any markdown formatting or additional text.`
+CRITICAL: Return ONLY the JSON object. No markdown formatting, no explanations, no additional text.`
   }
 
   private generateCustomizePrompt(request: CustomizeRequest): string {
-    return `You are a travel planning expert. The user has an existing itinerary and wants to make some customizations.
+    return `Modify the existing travel itinerary based on the user's request.
 
-Current itinerary:
+CURRENT ITINERARY:
 ${JSON.stringify(request.itinerary, null, 2)}
 
-User's customization request:
+USER'S MODIFICATION REQUEST:
 ${request.customizationRequest}
 
-Please modify the itinerary according to the user's request and return the updated JSON in the same format. Make sure to:
-1. Keep the overall structure intact
-2. Only modify the parts that need to be changed
-3. Maintain logical flow and timing
-4. Adjust costs if necessary
-5. Ensure new activities/places fit with the destination and dates
+INSTRUCTIONS:
+1. Keep the same JSON structure and format
+2. Only modify the specific parts requested by the user
+3. Maintain logical flow, timing, and geographical proximity
+4. Update costs and budget breakdown if activities change
+5. Ensure new suggestions fit the destination, dates, and original preferences
+6. Keep the same destination, duration, and travel dates unless specifically requested to change
+7. Update the "updatedAt" timestamp to current time
+8. Increment the version number in metadata
 
-Return only the complete updated JSON without any markdown formatting or additional text.`
+CRITICAL: Return ONLY the complete updated JSON object. No markdown, no explanations, no additional text.`
   }
 
   async generateItinerary(request: ItineraryRequest): Promise<APIResponse<any>> {
@@ -419,4 +497,4 @@ export const isAPIError = (response: any): response is { success: false; error: 
 
 export const isAPISuccess = <T>(response: APIResponse<T>): response is { success: true; data: T } => {
   return response && response.success === true && response.data !== undefined
-} 
+}    
