@@ -1,6 +1,41 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
+export function createPDFItineraryObject(itinerary: any) {
+  return {
+    title: itinerary.title || `${itinerary.destination?.name || 'Unknown'} Adventure`,
+    description: itinerary.description || 'A personalized travel itinerary crafted just for you',
+    destination: {
+      name: itinerary.destination?.name || 'Unknown Destination',
+      country: itinerary.destination?.country || 'Unknown Country'
+    },
+    duration: {
+      days: itinerary.duration?.days || (itinerary.activities || []).length || 1,
+      startDate: itinerary.duration?.startDate,
+      endDate: itinerary.duration?.endDate
+    },
+    budget: {
+      total: itinerary.budget?.total || 0,
+      currency: itinerary.budget?.currency || 'USD'
+    },
+    activities: (itinerary.activities || []).map(activity => ({
+      id: activity.id || `activity-${Math.random()}`,
+      name: activity.name || 'Unnamed Activity',
+      description: activity.description,
+      type: activity.type || 'general',
+      location: {
+        name: activity.location?.name || 'Unknown Location'
+      },
+      day: activity.day || 1,
+      timeSlot: activity.timeSlot,
+      cost: activity.cost ? {
+        amount: activity.cost.amount,
+        currency: activity.cost.currency
+      } : undefined
+    }))
+  };
+}
+
 export interface Itinerary {
   title: string;
   description: string;
@@ -222,4 +257,4 @@ export async function generateItineraryPDF(itinerary: Itinerary, elementId: stri
       }
     }, 1000);
   });
-} 
+}  
