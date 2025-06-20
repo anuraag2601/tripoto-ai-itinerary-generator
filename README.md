@@ -6,7 +6,7 @@
 [![Vite](https://img.shields.io/badge/Vite-4.3.9-purple.svg)](https://vitejs.dev/)
 [![Express](https://img.shields.io/badge/Express-5.1.0-green.svg)](https://expressjs.com/)
 
-> A full-stack AI-powered travel itinerary generator with Node.js/Express backend proxy server and React frontend. Features real Anthropic Claude API integration with CORS-free architecture for seamless local development and production deployment.
+> A full-stack AI-powered travel itinerary generator with Node.js/Express backend proxy server and React frontend. Features real Anthropic Claude 3 Haiku API integration with CORS-free architecture, intelligent fallback to direct API calls, and seamless local development and production deployment.
 
 ## 🚀 Live Demo
 *Production-ready full-stack application - just configure your API keys!*
@@ -29,12 +29,16 @@
 - **Modern React 18** with TypeScript for type safety
 - **Tailwind CSS** for beautiful, consistent styling
 - **Framer Motion** for smooth animations
-- **Production-Ready**: CORS-free architecture for seamless deployment
-- **Error Boundaries** and comprehensive error handling
+- **Backend Proxy Server**: Node.js/Express server resolving CORS issues for production deployment
+- **Anthropic Claude 3 Haiku Integration** with real API calls through secure backend proxy
+- **Intelligent Fallback System**: Direct API calls and mock data when backend unavailable
+- **Comprehensive Error Handling** including CORS detection and graceful degradation
+- **Production-Ready Architecture**: CORS-free full-stack deployment with environment variable configuration
 - **Accessibility** features (ARIA labels, keyboard navigation)
 
 ## 🔄 **API Integration Status**
 
+<<<<<<< HEAD
 ### ✅ **Production-Ready Features**
 - **AI-Generated Itineraries**: ✅ **Real Anthropic Claude API** through backend proxy
 - **CORS-Free Architecture**: ✅ **Backend proxy server** eliminates browser limitations
@@ -42,11 +46,20 @@
 - **Intelligent Fallback**: ✅ **Mock data** when backend unavailable
 
 ### 🔄 **Ready for Integration**
+||||||| 57f195e
+### 🔄 **Mock Data Features** (Ready for Real API Integration)
+- **AI-Generated Itineraries**: Uses intelligent mock data that responds to user inputs
+- **Anthropic Claude Integration**: Mock implementation ready for real API
+=======
+### 🔄 **Smart API Integration** (Production-Ready with Fallback)
+- **AI-Generated Itineraries**: ✅ **Real Anthropic Claude API calls** with intelligent fallback to mock data
+- **Anthropic Claude Integration**: ✅ **FULLY IMPLEMENTED** - Claude 3 Haiku model with comprehensive error handling
+>>>>>>> origin/main
 - **Google Maps Integration**: Placeholder for real map integration
 - **Hotel Booking APIs**: Mock data for accommodations
 - **Flight Booking APIs**: Mock transportation data
 
-> **Note**: The application now features a complete backend proxy server that handles real Anthropic Claude API calls, eliminating CORS issues for both local development and production deployment!
+> **Note**: The application features a complete backend proxy server that handles real Anthropic Claude 3 Haiku API calls, eliminating CORS issues for production deployment. It intelligently falls back to direct API calls and sophisticated mock data when needed, making it perfect for both production and development!
 
 ## 🛠️ Quick Setup (5 minutes)
 
@@ -70,7 +83,12 @@ npm run dev
 ### 3. Access the Application
 - **Frontend**: http://localhost:3000 (React application)
 - **Backend**: http://localhost:3001 (Express API server)
-- Start planning trips with real AI integration!
+- Start planning trips with real AI integration through backend proxy!
+
+### 4. Test API Integration (Optional)
+- Access the comprehensive API testing page at `/test-api.html`
+- Test real Anthropic Claude API calls through backend proxy and fallback behavior
+- View detailed logs and response validation
 
 ## 🔧 Production Configuration
 
@@ -175,10 +193,31 @@ npm run build
 vercel --prod
 ```
 
+### Option 2: Netlify
+```bash
+npm run build
+# Deploy the 'dist' folder to Netlify
+```
+
+### Option 3: GitHub Pages
+```bash
+npm run build
+# Deploy the 'dist' folder to GitHub Pages
+```
+
+### Option 4: Docker
+```bash
+# Build Docker image
+docker build -t tripoto-ai .
+
+# Run container
+docker run -p 3000:3000 tripoto-ai
+```
+
 ## 🔄 API Integration Status
 
 ### 1. **Anthropic Integration** (Primary AI) ✅ **FULLY IMPLEMENTED**
-The app includes complete Anthropic Claude integration with backend proxy:
+The app includes complete Anthropic Claude 3 Haiku integration with backend proxy server:
 
 ```typescript
 // Backend proxy handles API calls (backend/src/index.ts)
@@ -191,9 +230,20 @@ app.post('/api/itinerary/generate', async (req, res) => {
 if (USE_BACKEND_PROXY) {
   return await this.callBackendProxy('/api/itinerary/generate', request);
 }
+
+// ✅ Features:
+// - Backend proxy server eliminates CORS issues
+// - Claude 3 Haiku model for fast, efficient responses
+// - Intelligent fallback to direct API calls and mock data
+// - Production-ready with proper TypeScript types
+// - Successfully tested with real API keys
 ```
 
-**CORS Solution**: ✅ **SOLVED** - Backend proxy server eliminates all CORS issues.
+**CORS Solution**: ✅ **SOLVED** - Backend proxy server eliminates all CORS issues for production deployment.
+
+**Fallback System**: The app intelligently falls back to direct API calls and sophisticated mock data when backend proxy is unavailable.
+
+**Testing Verified**: ✅ Both backend proxy and direct API integration have been successfully tested with real Anthropic API keys, confirming proper error handling and fallback mechanisms.
 
 ### 2. **Alternative: OpenAI Integration**
 Replace Anthropic with OpenAI in `api.ts`:
@@ -226,7 +276,7 @@ frontend/                 # React application
 │   │   ├── TravelForm/      # Input forms
 │   │   └── shared/          # Common components
 │   ├── utils/            # API integration & utilities
-│   │   ├── api.ts           # Backend proxy integration
+│   │   ├── api.ts           # ✅ Backend proxy + direct API integration with intelligent fallback
 │   │   └── pdfGenerator.ts  # PDF export functionality
 │   ├── data/             # Mock data system
 │   ├── hooks/            # Custom React hooks
@@ -268,7 +318,7 @@ Frontend (React) → Backend Proxy (Express) → Anthropic Claude API
 
 ### Phase 1: Production Ready ✅ **COMPLETED**
 - [x] **Backend Proxy**: ✅ **COMPLETED** - CORS issues resolved with Express server
-- [x] **Real API Integration**: ✅ **COMPLETED** - Anthropic Claude through secure proxy
+- [x] **Anthropic Claude Integration**: ✅ **COMPLETED** - Claude 3 Haiku through secure proxy with intelligent fallback
 - [ ] **Real Hotel APIs**: Integrate with Booking.com, Expedia
 - [ ] **Flight APIs**: Real-time flight pricing and booking
 - [ ] **Authentication**: User accounts and saved itineraries
@@ -375,4 +425,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 **Ready to revolutionize travel planning? Clone, configure, and deploy in minutes!** 🚀
 
-*For questions, issues, or contributions, please open an issue or reach out to the maintainers.*   
+*For questions, issues, or contributions, please open an issue or reach out to the maintainers.*    

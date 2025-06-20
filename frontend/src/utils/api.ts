@@ -539,4 +539,6 @@ export const isAPIError = (response: any): response is { success: false; error: 
 
 export const isAPISuccess = <T>(response: APIResponse<T>): response is { success: true; data: T } => {
   return response && response.success === true && response.data !== undefined
-}          
+}
+
+export { AnthropicAPIClient }                    
