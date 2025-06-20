@@ -1,0 +1,22 @@
+{
+  "name": "tripoto-ai-project",
+  "version": "1.0.0",
+  "description": "Tripoto AI Itinerary Generator - Root workspace",
+  "private": true,
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "preview": "cd frontend && npm run preview",
+    "lint": "cd frontend && npm run lint",
+    "install": "cd frontend && npm install"
+  },
+  "workspaces": [
+    "frontend"
+  ],
+  "keywords": [
+    "travel",
+    "itinerary", 
+    "ai",
+    "workspace"
+  ]
+} 
