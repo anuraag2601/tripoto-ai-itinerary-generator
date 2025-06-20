@@ -4,11 +4,12 @@
 [![React](https://img.shields.io/badge/React-18.2.0-blue.svg)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0.2-blue.svg)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-4.3.9-purple.svg)](https://vitejs.dev/)
+[![Express](https://img.shields.io/badge/Express-5.1.0-green.svg)](https://expressjs.com/)
 
-> An AI-powered travel itinerary generator that creates personalized, media-rich travel itineraries. Currently running with comprehensive mock data for development and demonstration purposes.
+> A full-stack AI-powered travel itinerary generator with Node.js/Express backend proxy server and React frontend. Features real Anthropic Claude API integration with CORS-free architecture for seamless local development and production deployment.
 
 ## 🚀 Live Demo
-*Ready to deploy - just configure your API keys!*
+*Production-ready full-stack application - just configure your API keys!*
 
 ## 📋 What Works Now ✅
 
@@ -22,24 +23,30 @@
 - **Responsive Design**: Perfect on mobile, tablet, and desktop
 - **Real-time Customization**: Modify itineraries on-the-fly
 
-### ✅ **Technical Implementation**
+### ✅ **Full-Stack Architecture**
+- **Backend Proxy Server**: Node.js/Express server resolving CORS issues
+- **Real API Integration**: Anthropic Claude API calls through secure backend proxy
 - **Modern React 18** with TypeScript for type safety
 - **Tailwind CSS** for beautiful, consistent styling
 - **Framer Motion** for smooth animations
-- **Intelligent Mock Data System** that generates realistic itineraries based on user input
+- **Production-Ready**: CORS-free architecture for seamless deployment
 - **Error Boundaries** and comprehensive error handling
 - **Accessibility** features (ARIA labels, keyboard navigation)
 
-## ⚠️ What's Currently Mocked
+## 🔄 **API Integration Status**
 
-### 🔄 **Mock Data Features** (Ready for Real API Integration)
-- **AI-Generated Itineraries**: Uses intelligent mock data that responds to user inputs
-- **Anthropic Claude Integration**: Mock implementation ready for real API
+### ✅ **Production-Ready Features**
+- **AI-Generated Itineraries**: ✅ **Real Anthropic Claude API** through backend proxy
+- **CORS-Free Architecture**: ✅ **Backend proxy server** eliminates browser limitations
+- **Secure API Key Handling**: ✅ **Server-side** API key management
+- **Intelligent Fallback**: ✅ **Mock data** when backend unavailable
+
+### 🔄 **Ready for Integration**
 - **Google Maps Integration**: Placeholder for real map integration
 - **Hotel Booking APIs**: Mock data for accommodations
 - **Flight Booking APIs**: Mock transportation data
 
-> **Note**: The mock data system is sophisticated - it generates different itineraries based on your actual inputs (destination, dates, interests, budget). Perfect for demos and development!
+> **Note**: The application now features a complete backend proxy server that handles real Anthropic Claude API calls, eliminating CORS issues for both local development and production deployment!
 
 ## 🛠️ Quick Setup (5 minutes)
 
@@ -54,93 +61,139 @@ cd tripoto-ai-itinerary-generator
 npm install
 ```
 
-### 2. Frontend Setup
+### 2. Full-Stack Development
 ```bash
-cd frontend
-npm install
+# Run both backend and frontend concurrently
 npm run dev
 ```
 
-### 3. Access the App
-- Open http://localhost:3000
-- Start planning trips immediately with mock data!
+### 3. Access the Application
+- **Frontend**: http://localhost:3000 (React application)
+- **Backend**: http://localhost:3001 (Express API server)
+- Start planning trips with real AI integration!
 
 ## 🔧 Production Configuration
 
-### API Keys Setup (Optional - works without them)
+### API Keys Setup (Required for Real AI Integration)
 
-1. **Copy environment file:**
+1. **Backend Environment Setup:**
+```bash
+cd backend
+cp .env.example .env
+```
+
+2. **Add your API key to backend `.env`:**
+```env
+# Required for real AI-powered itineraries
+ANTHROPIC_API_KEY=your_actual_anthropic_api_key
+PORT=3001
+NODE_ENV=development
+ALLOWED_ORIGINS=http://localhost:3000,https://your-frontend-domain.com
+```
+
+3. **Frontend Environment Setup:**
 ```bash
 cd frontend
 cp .env.example .env
 ```
 
-2. **Add your API keys to `.env`:**
+4. **Configure frontend `.env`:**
 ```env
-# For real AI-powered itineraries
+# Backend proxy configuration (recommended)
+VITE_BACKEND_URL=http://localhost:3001
+VITE_USE_BACKEND_PROXY=true
+
+# Direct API fallback (optional)
 VITE_ANTHROPIC_API_KEY=your_actual_anthropic_api_key
 
-# For enhanced features (optional)
+# Additional features
 VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 ```
 
-3. **Restart the development server:**
+5. **Restart the development servers:**
 ```bash
 npm run dev
 ```
 
 ### Environment Variables Reference
 
+#### Backend Variables (`backend/.env`)
 | Variable | Required | Description | Default |
 |----------|----------|-------------|---------|
-| `VITE_ANTHROPIC_API_KEY` | No* | Anthropic Claude API key | Uses mock data |
+| `ANTHROPIC_API_KEY` | Yes | Anthropic Claude API key | None |
+| `PORT` | No | Backend server port | `3001` |
+| `NODE_ENV` | No | Environment mode | `development` |
+| `ALLOWED_ORIGINS` | No | CORS allowed origins | `http://localhost:3000` |
+
+#### Frontend Variables (`frontend/.env`)
+| Variable | Required | Description | Default |
+|----------|----------|-------------|---------|
+| `VITE_BACKEND_URL` | No | Backend proxy URL | `http://localhost:3001` |
+| `VITE_USE_BACKEND_PROXY` | No | Enable backend proxy | `true` |
+| `VITE_ANTHROPIC_API_KEY` | No* | Direct API fallback | Uses backend proxy |
 | `VITE_GOOGLE_MAPS_API_KEY` | No | Google Maps integration | Disabled |
 | `VITE_ENABLE_ANALYTICS` | No | Enable usage analytics | `false` |
 | `VITE_ENABLE_PDF_DOWNLOAD` | No | Enable PDF export | `true` |
 
-*App works perfectly with mock data if no API key provided
+*Only needed if not using backend proxy
 
 ## 🚀 Deployment Options
 
-### Option 1: Vercel (Recommended - 1 minute)
+### Option 1: Full-Stack Deployment (Recommended)
+
+#### Backend Deployment (Railway/Render/Heroku)
 ```bash
-npm install -g vercel
+cd backend
+npm run build
+# Deploy backend to your preferred platform
+# Set environment variables: ANTHROPIC_API_KEY, ALLOWED_ORIGINS
+```
+
+#### Frontend Deployment (Vercel/Netlify)
+```bash
+cd frontend
+npm run build
+# Deploy frontend with VITE_BACKEND_URL pointing to your backend
+```
+
+### Option 2: Serverless Functions
+```bash
+# Convert backend routes to serverless functions
+# Deploy frontend with serverless API routes
+```
+
+### Option 3: Docker Full-Stack
+```bash
+# Build and run both services
+docker-compose up --build
+```
+
+### Option 4: Single Platform (e.g., Vercel Full-Stack)
+```bash
+# Deploy both frontend and backend API routes to Vercel
+npm run build
 vercel --prod
 ```
 
-### Option 2: Netlify
-```bash
-npm run build
-# Deploy the 'dist' folder to Netlify
-```
+## 🔄 API Integration Status
 
-### Option 3: GitHub Pages
-```bash
-npm run build
-# Deploy the 'dist' folder to GitHub Pages
-```
-
-### Option 4: Docker
-```bash
-# Build Docker image
-docker build -t tripoto-ai .
-
-# Run container
-docker run -p 3000:3000 tripoto-ai
-```
-
-## 🔄 Converting Mock to Real APIs
-
-### 1. **Anthropic Integration** (Primary AI)
-The app is already set up for Anthropic Claude. Just add your API key:
+### 1. **Anthropic Integration** (Primary AI) ✅ **FULLY IMPLEMENTED**
+The app includes complete Anthropic Claude integration with backend proxy:
 
 ```typescript
-// In frontend/src/utils/api.ts
-// Already implemented - just needs API key in .env
-const USE_MOCK_DATA = !ANTHROPIC_API_KEY || ANTHROPIC_API_KEY === 'your_anthropic_api_key_here'
+// Backend proxy handles API calls (backend/src/index.ts)
+app.post('/api/itinerary/generate', async (req, res) => {
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  // Secure server-side API calls with CORS headers
+});
+
+// Frontend routes through backend (frontend/src/utils/api.ts)
+if (USE_BACKEND_PROXY) {
+  return await this.callBackendProxy('/api/itinerary/generate', request);
+}
 ```
 
-**CORS Solution**: Deploy with a backend proxy or use serverless functions.
+**CORS Solution**: ✅ **SOLVED** - Backend proxy server eliminates all CORS issues.
 
 ### 2. **Alternative: OpenAI Integration**
 Replace Anthropic with OpenAI in `api.ts`:
@@ -155,9 +208,16 @@ Replace Anthropic with OpenAI in `api.ts`:
 // Already prepared for integration
 ```
 
-## 🎯 Architecture Overview
+## 🎯 Full-Stack Architecture Overview
 
 ```
+backend/                  # Node.js/Express API server
+├── src/
+│   └── index.ts         # Express server with proxy endpoints
+├── package.json         # Backend dependencies
+├── tsconfig.json        # TypeScript configuration
+└── .env.example         # Environment variables template
+
 frontend/                 # React application
 ├── src/
 │   ├── components/       # Reusable UI components
@@ -166,7 +226,7 @@ frontend/                 # React application
 │   │   ├── TravelForm/      # Input forms
 │   │   └── shared/          # Common components
 │   ├── utils/            # API integration & utilities
-│   │   ├── api.ts           # AI API integration (with mock)
+│   │   ├── api.ts           # Backend proxy integration
 │   │   └── pdfGenerator.ts  # PDF export functionality
 │   ├── data/             # Mock data system
 │   ├── hooks/            # Custom React hooks
@@ -174,6 +234,17 @@ frontend/                 # React application
 │
 shared/                   # Common types and utilities
 └── types.ts             # TypeScript definitions
+
+package.json             # Root workspace configuration
+```
+
+### 🔄 **Request Flow**
+```
+Frontend (React) → Backend Proxy (Express) → Anthropic Claude API
+                ↓
+            CORS Headers Applied
+                ↓
+            Response to Frontend
 ```
 
 ## 🎨 Customization
@@ -195,8 +266,9 @@ shared/                   # Common types and utilities
 
 ## 🚀 Future Roadmap
 
-### Phase 1: Production Ready (Immediate)
-- [ ] **Backend Proxy**: Solve CORS issues for direct API calls
+### Phase 1: Production Ready ✅ **COMPLETED**
+- [x] **Backend Proxy**: ✅ **COMPLETED** - CORS issues resolved with Express server
+- [x] **Real API Integration**: ✅ **COMPLETED** - Anthropic Claude through secure proxy
 - [ ] **Real Hotel APIs**: Integrate with Booking.com, Expedia
 - [ ] **Flight APIs**: Real-time flight pricing and booking
 - [ ] **Authentication**: User accounts and saved itineraries
@@ -271,14 +343,14 @@ POST /api/customize-itinerary
 ## 🐛 Known Issues & Limitations
 
 ### Current Limitations
-- **CORS Restrictions**: Direct browser API calls to Anthropic are blocked
-- **Mock Data**: Not connected to real booking systems yet
+- **Hotel/Flight APIs**: Not connected to real booking systems yet
 - **Offline Mode**: Not implemented yet
+- **User Authentication**: No user accounts or saved itineraries
 
-### Workarounds
-- ✅ **Mock Data**: Sophisticated system provides realistic demo experience
-- ✅ **Backend Proxy**: Architecture ready for backend integration
-- ✅ **Progressive Enhancement**: App works great even with limitations
+### ✅ **Resolved Issues**
+- ✅ **CORS Restrictions**: **SOLVED** - Backend proxy eliminates all CORS issues
+- ✅ **API Integration**: **COMPLETED** - Real Anthropic Claude API integration
+- ✅ **Production Deployment**: **READY** - Full-stack architecture deployed
 
 ## 📄 License
 
@@ -303,4 +375,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 **Ready to revolutionize travel planning? Clone, configure, and deploy in minutes!** 🚀
 
-*For questions, issues, or contributions, please open an issue or reach out to the maintainers.* 
+*For questions, issues, or contributions, please open an issue or reach out to the maintainers.*   
